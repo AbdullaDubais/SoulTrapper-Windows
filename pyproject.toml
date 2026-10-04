@@ -1,0 +1,40 @@
+[project]
+name = "soultrapper"
+version = "1.0"
+# Permissive on purpose: a developer on 3.13 or later can work on this, using
+# audioop-lts (below) or sound_levels' own fallback. What ships is pinned to a
+# single version by tools/build_mac_runtime.sh, which defaults to 3.12 because
+# that is the last version with audioop in the standard library and is what the
+# Windows build uses.
+requires-python = ">=3.12"
+dependencies = [
+    # The game's front end: window, mixer, 64 channels, and the raw PCM the
+    # sound bank is cached as.
+    "pygame-ce>=2.5.8",
+    # VoiceOver, for Mac speech. Mac-only, and the reason the Mac build is
+    # playable at all by the player this game is for.
+    "pyobjc-framework-cocoa>=12.0.0; sys_platform == 'darwin'",
+    # engine.py does not reimplement the original game's chapter logic, it
+    # emulates it: data/SoulTrapper.arm is the original ARM code and this runs
+    # it. So the game cannot start without this, and neither can the bundle -
+    # it is a dependency, not an optional extra.
+    #
+    # Floored at 2.0.1 rather than 2.1: 1.1 ships a patched 2.0.1.post1 wheel
+    # (see BUILD-NOTES.md) because 2.1.4 crashed natively during emulator
+    # setup on Windows. Both have macOS arm64 wheels and 2.1.4 is what the Mac
+    # build has been tested against; this only says which is the floor.
+    "unicorn>=2.0.1",
+    # Windows SAPI 5, for the fallback when NVDA is not running. Windows-only,
+    # and skipped on a Mac build by its marker.
+    "comtypes>=1.2; sys_platform == 'win32'",
+    # audioop was removed in 3.13. sound_levels.py has a byte-exact fallback of
+    # its own, so this is only here to get the C implementation on a newer
+    # interpreter - the audio is identical either way, and
+    # tests/test_sound_levels.py holds the two to the same output.
+    "audioop-lts>=0.2.2; python_version >= '3.13'",
+]
+
+[dependency-groups]
+dev = [
+    "pyflakes",
+]

@@ -2,11 +2,20 @@ assets/
 data/
 runtime/
 unicorn/
-vendor/
+# Everything under vendor/ is a local copy, except the Mac's OpenAL Soft: the
+# game needs libopenal.dylib at run time and a player has no way to obtain it,
+# so it is committed the way the Windows ZIP carries soft_oal.dll. Rebuild it
+# with tools/build_openal_mac.sh. Note vendor/* and not vendor/ - git will not
+# descend into an excluded directory to find anything re-included inside it.
+vendor/*
+!vendor/openal-mac/
+!vendor/openal-mac/libopenal.dylib
+dist/
 saves/
 test-save/
 __pycache__/
 *.pyc
+.DS_Store
 *.log
 *.ipa
 *.arm

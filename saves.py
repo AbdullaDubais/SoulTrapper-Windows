@@ -1,11 +1,22 @@
 import gzip,json,os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from host import is_portable, user_data_dir
+def default_root():
+ # portable/'saves' when this copy is portable, otherwise the platform's own
+ # per-user folder: %LOCALAPPDATA%\SoulTrapperWindows on Windows,
+ # ~/Library/Application Support/Soul Trapper on the Mac, where a .app is
+ # usually not writable from the inside.
+ # Path(__file__).parent is the folder the game modules live in - _internal in
+ # the Windows ZIP - which is what is_portable looks at, not this file's parent.
+ module=Path(__file__).resolve().parent
+ return module.parent/'saves' if is_portable(module) else user_data_dir()
+
 class Saves:
  def __init__(self,root=None):
-  portable=Path(__file__).resolve().parent.parent
-  self.root=Path(root) if root else (portable/'saves' if Path(__file__).resolve().parent.name=='_internal' or (portable/'portable.txt').is_file() else Path(os.environ.get('LOCALAPPDATA',Path.home()))/'SoulTrapperWindows')
-  self.root.mkdir(parents=True,exist_ok=True)
+  self.root=Path(root) if root else default_root()
+  try:self.root.mkdir(parents=True,exist_ok=True)
+  except OSError:self.root=user_data_dir();self.root.mkdir(parents=True,exist_ok=True)
   self.writer=ThreadPoolExecutor(max_workers=1,thread_name_prefix='save');self.pending=[]
  def path(self,slot='continue'):return self.root/(slot+'.json.gz')
  def exists(self,slot='continue'):return self.path(slot).is_file()

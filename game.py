@@ -1,5 +1,6 @@
 """Soul Trapper Windows: keyboard and screen-reader front end."""
 import os,sys,time,traceback,copy,json
+import host
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT']='1'
 import pygame
 from pathlib import Path
@@ -377,7 +378,8 @@ if __name__=='__main__':
  smoke='--smoke-test' in sys.argv
  try:Game(smoke).run(smoke)
  except Exception:
-  import ctypes
   p=write_error('Startup failure')
-  if not smoke and '--launcher' not in sys.argv:ctypes.windll.user32.MessageBoxW(0,'Soul Trapper could not start. Please send error.log to the developer. Details: '+str(p),'Soul Trapper',0)
+  # The launcher shows its own dialog for a crash it can see; --launcher means
+  # "someone upstream is handling this", so stay quiet and let them have it.
+  if not smoke and '--launcher' not in sys.argv:host.alert('Soul Trapper','Soul Trapper could not start. Please send error.log to the developer. Details: '+str(p))
   raise

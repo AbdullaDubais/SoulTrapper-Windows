@@ -4,6 +4,7 @@ from array import array
 from pathlib import Path
 import wave
 from sound_levels import enhance
+from host import openal_library, prepare_library_path
 
 
 class SpatialAudio:
@@ -14,7 +15,9 @@ class SpatialAudio:
         self.reverb = False
         self.effect = C.c_uint()
         self.slot = C.c_uint()
-        self.lib = C.CDLL(str(Path(root)/'vendor/openal/soft_oal.dll'))
+        library = openal_library(root)
+        prepare_library_path(library)
+        self.lib = C.CDLL(str(library))
         signatures = [
             ('alcOpenDevice',C.c_void_p,[C.c_char_p]),
             ('alcCloseDevice',C.c_int,[C.c_void_p]),
